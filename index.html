@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BookVerse — GitHub Inspired Book Recommender (Animated)</title>
+
+  <style>
+    /* ================= GLOBAL ================= */
+    :root{
+      --bg: #0d1117;
+      --panel: #161b22;
+      --text: #c9d1d9;
+      --muted: #9aa4b2;
+      --accent: #2f81f7;
+      --border: #30363d;
+      --card-radius: 12px;
+      --container: 1100px;
+      --shadow: rgba(2,6,23,0.6);
+      --transition: 320ms cubic-bezier(.2,.9,.3,1);
+    }
+
+    /* Light mode overrides */
+    body.light {
+      --bg: #ffffff;
+      --panel: #f6f8fa;
+      --text: #24292f;
+      --muted: #6e7781;
+      --border: #d0d7de;
+      --shadow: rgba(2,6,23,0.06);
+    }
+
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,var(--bg),var(--panel));
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    .container{max-width:var(--container);margin:0 auto;padding:20px}
+
+    /* ================= NAV ================= */
+    nav{
+      width:100%;position:sticky;top:0;z-index:120;
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,0,0,0.04), transparent);
+    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:var(--container);margin:0 auto;padding:14px 20px}
+    .brand{display:flex;gap:10px;align-items:center}
+    .brand .logo{font-weight:700;font-size:18px}
+    .actions{display:flex;gap:10px;align-items:center}
+    .icon-btn, .btn { border-radius:10px; padding:8px 12px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; transition: transform 180ms ease, box-shadow 180ms ease; }
+    .btn.primary{background:var(--accent); color: #fff; border: none; box-shadow: 0 8px 18px rgba(47,129,247,0.16); }
+    .icon-btn:focus, .btn:focus{outline:3px solid rgba(47,129,247,0.18); outline-offset:4px}
+
+    /* ================= HERO ================= */
+    .hero{display:flex;gap:28px;align-items:center;padding:64px 20px;flex-wrap:wrap}
+    .hero-left{flex:1;min-width:280px}
+    .hero-left h1{font-size:clamp(26px,4.2vw,40px);margin:0 0 8px}
+    .hero-left p{margin:0;color:var(--muted)}
+    .hero-right{width:320px;display:block}
+    .sample-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:18px;border-radius:12px;box-shadow:0 20px 40px var(--shadow); text-align:center}
+
+    /* ================= CONTROLS ================= */
+    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px}
+    select,input[type="search"]{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);min-width:160px}
+    input::placeholder{color:var(--muted)}
+    .status{margin-top:8px;color:var(--muted);font-size:13px}
+
+    /* ================= RESULTS ================= */
+    .section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:14px}
+    .card{
+      background:var(--panel); border-radius:12px; padding:14px; box-shadow:0 12px 30px var(--shadow);
+      border:1px solid var(--border); display:flex;flex-direction:column;gap:8px;cursor:pointer; transform: translateY(8px); opacity:0;
+      transition: transform var(--transition), opacity var(--transition), box-shadow var(--transition);
+    }
+    .card:hover{ transform: translateY(-6px); box-shadow:0 20px 40px var(--shadow); }
+    .cover{height:260px;border-radius:8px;background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.03)}
+    .title{font-weight:700}
+    .author{color:var(--muted);font-size:13px}
+    .meta{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+    .pill{background:rgba(0,0,0,0.06);padding:6px 8px;border-radius:999px;font-size:12px}
+
+    /* show (visible) */
+    .card.show{ opacity:1; transform:none; }
+
+    /* ================= REVEAL (sections) ================= */
+    .reveal{opacity:0;transform: translateY(40px);transition:opacity 700ms cubic-bezier(.2,.9,.2,1), transform 700ms cubic-bezier(.2,.9,.2,1)}
+    .reveal.active{opacity:1;transform:none}
+
+    /* ================= FOOTER ================= */
+    footer{padding:28px 20px;text-align:center;border-top:1px solid var(--border);color:var(--muted);margin-top:26px}
+
+    /* responsive */
+    @media (max-width:880px){
+      .hero{padding:40px 16px}
+      .hero-right{display:none}
+      .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="topbar container">
+      <div class="brand">
+        <div class="logo">📚 BookVerse</div>
+      </div>
+
+      <div class="actions">
+        <input id="global-search" type="search" placeholder="Search title or author..." aria-label="Global search" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text)">
+        <button id="themeToggle" class="icon-btn" aria-pressed="false" title="Toggle theme">🌓</button>
+        <button id="open-favs" class="btn">Favorites <span id="fav-count" style="margin-left:8px;background:rgba(0,0,0,0.06);padding:2px 8px;border-radius:999px;font-size:12px">0</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="hero reveal" aria-labelledby="hero-heading">
+      <div class="hero-left">
+        <h1 id="hero-heading">Discover your next great read</h1>
+        <p class="muted">Smart recommendations, fast UI, and a clean, elegant layout.</p>
+
+        <form id="controls" class="controls" role="search" onsubmit="return false;">
+          <select id="genre" aria-label="Filter by genre">
+            <option value="">All genres</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="romance">Romance</option>
+            <option value="mystery">Mystery</option>
+            <option value="sci-fi">Sci-Fi</option>
+            <option value="non-fiction">Non-Fiction</option>
+          </select>
+
+          <input id="search" type="search" placeholder="Search title or author" aria-label="Search in results">
+
+          <button id="suggestBtn" class="btn primary">Suggest</button>
+        </form>
+
+        <div class="status" role="status" aria-live="polite" id="status">Choose a genre and click Suggest.</div>
+      </div>
+
+      <div class="hero-right" aria-hidden="true">
+        <div class="sample-card">
+          <div style="font-size:40px;margin-bottom:10px">📘</div>
+          <div style="font-weight:700">Featured: Dune</div>
+          <div style="color:var(--muted);font-size:13px">Frank Herbert</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="results reveal" aria-labelledby="results-heading">
+      <div class="section-header">
+        <h2 id="results-heading">Recommended Books</h2>
+        <div class="controls" style="margin:0">
+          <div id="count" class="muted">0 books</div>
+        </div>
+      </div>
+
+      <div id="book-grid" class="grid" role="list"></div>
+
+      <div id="empty" class="reveal" style="margin-top:18px;color:var(--muted)">No results yet — pick a genre or search above.</div>
+    </section>
+  </main>
+
+  <footer>
+    <small>© <strong>BookVerse</strong> — Clean, GitHub-inspired UI</small>
+  </footer>
+
+  <script>
+    // ---------- sample DB ----------
+    const books = {
+      fantasy: [
+        { title: "The Hobbit", author: "J.R.R. Tolkien", cover: "https://covers.openlibrary.org/b/id/6979861-L.jpg", summary: "Bilbo's adventurous journey." },
+        { title: "The Name of the Wind", author: "Patrick Rothfuss", cover: "https://covers.openlibrary.org/b/id/8231851-L.jpg", summary: "A gifted storyteller's origin." }
+      ],
+      romance: [
+        { title: "Pride & Prejudice", author: "Jane Austen", cover: "https://covers.openlibrary.org/b/id/8226191-L.jpg", summary: "Classic romance and wit." },
+        { title: "The Fault in Our Stars", author: "John Green", cover: "https://covers.openlibrary.org/b/id/7279251-L.jpg", summary: "A tender, witty love story." }
+      ],
+      mystery: [
+        { title: "Gone Girl", author: "Gillian Flynn", cover: "https://covers.openlibrary.org/b/id/8231856-L.jpg", summary: "Twisty psychological thriller." },
+        { title: "The Hound of the Baskervilles", author: "Arthur Conan Doyle", cover: "https://covers.openlibrary.org/b/id/8108691-L.jpg", summary: "A gothic Sherlock mystery." }
+      ],
+      "sci-fi": [
+        { title: "Dune", author: "Frank Herbert", cover: "https://covers.openlibrary.org/b/id/8101348-L.jpg", summary: "Desert planet, politics and prophecy." },
+        { title: "The Martian", author: "Andy Weir", cover: "https://covers.openlibrary.org/b/id/8373590-L.jpg", summary: "A stranded astronaut's fight to survive." }
+      ],
+      "non-fiction": [
+        { title: "Sapiens", author: "Yuval Noah Harari", cover: "https://covers.openlibrary.org/b/id/8165261-L.jpg", summary: "A brief history of humankind." },
+        { title: "Atomic Habits", author: "James Clear", cover: "https://covers.openlibrary.org/b/id/9251976-L.jpg", summary: "Tiny changes, remarkable results." }
+      ]
+    };
+
+    // ---------- elements ----------
+    const genreEl = document.getElementById('genre');
+    const searchEl = document.getElementById('search');
+    const suggestBtn = document.getElementById('suggestBtn');
+    const bookGrid = document.getElementById('book-grid');
+    const emptyEl = document.getElementById('empty');
+    const countEl = document.getElementById('count');
+    const statusEl = document.getElementById('status');
+    const globalSearch = document.getElementById('global-search');
+
+    const themeToggle = document.getElementById('themeToggle');
+    const favCount = document.getElementById('fav-count');
+
+    // favorites state
+    let favorites = JSON.parse(localStorage.getItem('bv:favs') || '[]');
+
+    function setStatus(msg){ statusEl.textContent = msg; }
+    function flattenDB(){ return Object.values(books).flat(); }
+
+    // render helpers
+    function createCard(book){
+      const a = document.createElement('article');
+      a.className = 'card';
+      a.tabIndex = 0;
+
+      const cover = document.createElement('div');
+      cover.className = 'cover';
+      cover.style.backgroundImage = `url(${book.cover})`;
+
+      const title = document.createElement('div'); title.className = 'title'; title.textContent = book.title;
+      const author = document.createElement('div'); author.className = 'author'; author.textContent = book.author;
+
+      const meta = document.createElement('div'); meta.className = 'meta';
+      const pill = document.createElement('span'); pill.className = 'pill'; pill.textContent = 'Details';
+      const favBtn = document.createElement('button'); favBtn.className = 'btn'; favBtn.textContent = '❤';
+
+      // favorite toggle
+      favBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const exists = favorites.find(f => f.title === book.title && f.author === book.author);
+        if(!exists){ favorites.push(book); favBtn.classList.add('active'); } 
+        else { favorites = favorites.filter(f => !(f.title===book.title && f.author===book.author)); favBtn.classList.remove('active'); }
+        localStorage.setItem('bv:favs', JSON.stringify(favorites));
+        favCount.textContent = favorites.length;
+      });
+
+      // card click -> quick peek (toast-like)
+      a.addEventListener('click', () => {
+        // small visual feedback and accessible announcement
+        a.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-8px)' }, { transform: 'translateY(0)' }], { duration: 360, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        setStatus(`${book.title} — ${book.author}`);
+        setTimeout(()=> setStatus(''), 2000);
+      });
+
+      // keyboard support
+      a.addEventListener('keydown', e => {
+        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); a.click(); }
+      });
+
+      meta.appendChild(pill); meta.appendChild(favBtn);
+      a.appendChild(cover); a.appendChild(title); a.appendChild(author); a.appendChild(meta);
+      return a;
+    }
+
+    function renderResults(list){
+      bookGrid.innerHTML = '';
+      if(!list.length){ emptyEl.style.display = 'block'; countEl.textContent = '0 books'; return; }
+      emptyEl.style.display = 'none';
+      countEl.textContent = `${list.length} book${list.length !== 1 ? 's' : ''}`;
+
+      // append with small stagger to allow entrance animation
+      list.forEach((b, i) => {
+        setTimeout(() => {
+          const card = createCard(b);
+          bookGrid.appendChild(card);
+          // small delay then add 'show' to trigger CSS transition
+          requestAnimationFrame(() => setTimeout(()=> card.classList.add('show'), 20));
+          // observe card for scroll reveal (already visible but keeps behavior consistent)
+          revealObserver.observe(card);
+        }, i * 90);
+      });
+    }
+
+    // filter + search
+    function filterAndSearch(){
+      const g = genreEl.value;
+      const q = (searchEl.value || '').trim().toLowerCase();
+      const gq = (globalSearch.value || '').trim().toLowerCase();
+
+      let results = [];
+      if(g) results = (books[g] || []).slice();
+      else results = flattenDB();
+
+      // global search in header takes precedence if non-empty
+      if(gq) results = results.filter(b => b.title.toLowerCase().includes(gq) || b.author.toLowerCase().includes(gq));
+      if(q) results = results.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
+
+      renderResults(results);
+    }
+
+    // theme toggle: persist preference
+    function applyTheme(isLight){
+      if(isLight) document.body.classList.add('light'); else document.body.classList.remove('light');
+      localStorage.setItem('bv:light', isLight ? '1' : '0');
+      themeToggle.setAttribute('aria-pressed', isLight ? 'true' : 'false');
+    }
+    themeToggle.addEventListener('click', () => {
+      const isLight = !document.body.classList.contains('light');
+      applyTheme(isLight);
+    });
+    // initialize theme from storage
+    applyTheme(localStorage.getItem('bv:light') === '1');
+
+    // IntersectionObserver for section reveal
+    const sectionObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if(e.isIntersecting) { e.target.classList.add('active'); sectionObserver.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+
+    document.querySelectorAll('.reveal').forEach(el => sectionObserver.observe(el));
+
+    // IntersectionObserver for cards (subtle: we already add 'show' when created, this is fallback)
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(ent => {
+        if(ent.isIntersecting){ ent.target.classList.add('show'); revealObserver.unobserve(ent.target); }
+      });
+    }, { threshold: 0.12 });
+
+    // quick keyboard: Ctrl/Cmd+K to focus header search
+    globalSearch.addEventListener('keydown', (e) => { if(e.key === 'Escape') globalSearch.blur(); });
+    window.addEventListener('keydown', e => {
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); globalSearch.focus(); }
+    });
+
+    // wire up events
+    suggestBtn.addEventListener('click', (e) => { e.preventDefault(); filterAndSearch(); });
+    searchEl.addEventListener('keydown', e => { if(e.key === 'Enter') filterAndSearch(); });
+    globalSearch.addEventListener('keydown', e => { if(e.key === 'Enter') filterAndSearch(); });
+
+    // initial state
+    document.addEventListener('DOMContentLoaded', () => {
+      // show initial reveal state for hero & results
+      document.querySelectorAll('.reveal').forEach(el => {/* observed above */});
+      // update favorites count
+      favCount.textContent = favorites.length;
+      // initial instruction in status
+      setStatus('Choose a genre and click Suggest.');
+      setTimeout(()=> setStatus(''), 1800);
+    });
+
+    // accessibility: focus visible polyfill (optional)
+    (function(){
+      function onFirstTab(e){
+        if(e.key === 'Tab'){ document.body.classList.add('show-focus'); window.removeEventListener('keydown', onFirstTab); }
+      }
+      window.addEventListener('keydown', onFirstTab);
+    })();
+  </script>
+</body>
+</html>

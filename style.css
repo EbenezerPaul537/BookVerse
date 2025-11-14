@@ -1,0 +1,109 @@
+/* GitHub-inspired clean UI for BookHub
+   Principles: hierarchy, spacing, accessible contrast, subtle motion
+*/
+
+:root{
+  --bg: #f6f8fa;
+  --panel: #ffffff;
+  --muted: #6e7781;
+  --text: #24292f;
+  --accent: #0366d6;
+  --danger: #d73a49;
+  --glass: rgba(255,255,255,0.6);
+  --shadow: rgba(36,41,46,0.08);
+  --radius: 10px;
+  --container: 1100px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg,var(--bg),#ffffff);
+  color:var(--text); -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.4;
+}
+
+/* container */
+.container{max-width:var(--container);margin:0 auto;padding:20px}
+
+/* topbar */
+.topbar{background:var(--panel);border-bottom:1px solid rgba(0,0,0,0.04);position:sticky;top:0;z-index:30}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .octicon{width:20px;height:20px;fill:var(--text)}
+.brand-text{font-weight:600;font-size:18px}
+.nav-actions{display:flex;align-items:center;gap:12px}
+.search-wrap{min-width:220px}
+#global-search{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);min-width:220px;}
+
+/* header / hero */
+.hero{display:flex;gap:24px;align-items:center;padding:28px 0}
+.hero-left{flex:1}
+.hero-right{width:320px;display:flex;justify-content:center}
+.hero h1{font-size:28px;margin:0 0 8px}
+.muted{color:var(--muted);font-size:14px}
+.controls{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.controls select,.controls input[type="search"]{
+  padding:10px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);min-width:160px
+}
+.btn{padding:10px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:transparent;cursor:pointer}
+.btn.primary{background:var(--accent);color:#fff;border:none}
+.btn.danger{background:var(--danger);color:#fff;border:none}
+.icon-btn{background:transparent;border:0;padding:6px;border-radius:8px;cursor:pointer}
+
+/* hero right sample */
+.card-glow{background:linear-gradient(180deg,#fff,#f0f6ff);padding:18px;border-radius:12px;box-shadow:0 8px 30px var(--shadow);width:260px;text-align:center}
+.book-sample{position:relative}
+.cover-placeholder{font-size:44px;background:linear-gradient(180deg,#e3f2ff,#bfe0ff);width:100px;height:140px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px}
+.ribbon{position:absolute;left:10px;top:10px;background:var(--accent);color:#fff;padding:4px 8px;border-radius:6px;font-size:12px}
+
+/* results */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:14px}
+.card{background:var(--panel);border-radius:10px;padding:14px;box-shadow:0 8px 20px var(--shadow);position:relative;display:flex;flex-direction:column;gap:8px;transition:transform .18s ease,box-shadow .18s}
+.card:hover{transform:translateY(-6px);box-shadow:0 16px 30px rgba(36,41,46,0.12)}
+.card .cover{width:100%;height:260px;border-radius:8px;background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.03)}
+.card h3{font-size:16px;margin:0}
+.card p{margin:0;color:var(--muted);font-size:13px}
+.card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+.pill{background:rgba(0,0,0,0.06);padding:4px 8px;border-radius:999px;font-size:12px}
+
+/* modal */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:opacity .18s}
+.modal[aria-hidden="false"]{opacity:1;pointer-events:auto}
+.modal-panel{background:var(--panel);border-radius:12px;padding:18px;max-width:720px;width:94%;box-shadow:0 20px 60px rgba(0,0,0,0.2);position:relative}
+.modal-close{position:absolute;right:12px;top:12px;border:0;background:transparent;cursor:pointer;font-size:18px}
+
+/* empty */
+.empty{margin-top:18px;color:var(--muted);padding:24px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfbfb);text-align:center;}
+
+/* favorites pane */
+.favs-pane{position:fixed;right:-380px;top:0;height:100%;width:360px;background:var(--panel);box-shadow:-8px 0 30px rgba(0,0,0,0.12);transition:right .22s;z-index:40;padding:18px}
+.favs-pane.open{right:0}
+.favs-header{display:flex;justify-content:space-between;align-items:center}
+.fav-list{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.fav-item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfbfb);box-shadow:0 6px 12px rgba(0,0,0,0.04)}
+
+/* small responsive */
+@media (max-width:860px){
+  .hero{flex-direction:column}
+  .hero-right{display:none}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+  .favs-pane{width:100%;right:-100%}
+}
+
+/* subtle entrance animation for cards */
+.card { transform: translateY(8px) scale(.995); opacity:0; animation:cardIn .36s forwards; }
+@keyframes cardIn { to { transform:none; opacity:1; } }
+
+/* dark-ish theme (toggle via JS adding .dark on body) */
+body.dark{
+  --bg:#0d1117;
+  --panel:#0b1220;
+  --muted:#9aa3b2;
+  --text:#c9d1d9;
+  --accent:#58a6ff;
+  background: linear-gradient(180deg,#020409,#071122);
+}
